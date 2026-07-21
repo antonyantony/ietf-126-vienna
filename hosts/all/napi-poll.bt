@@ -1,0 +1,13 @@
+#!/usr/bin/env bpftrace
+
+tracepoint:napi:napi_poll
+  {
+      $n = (struct napi_struct *)args->napi;
+      if ($n->dev != 0) {
+          printf("cpu=%d dev=%s work=%d budget=%d\n",
+                 cpu, $n->dev->name, args->work, args->budget);
+      } else {
+          printf("cpu=%d dev=(no_dev) work=%d budget=%d\n",
+                 cpu, args->work, args->budget);
+      }
+ }

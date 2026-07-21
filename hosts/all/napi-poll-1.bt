@@ -1,0 +1,5 @@
+#!/usr/bin/env bpftrace
+tracepoint:napi:napi_poll
+{
+    printf("cpu=%d dev=%s work=%d budget=%d\n", cpu, str(args->dev_name), args->work, args->budget);
+}
