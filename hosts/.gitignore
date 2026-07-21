@@ -1,0 +1,14 @@
+DS_Store
+err.out
+*.yang
+*.tex
+*.pdf
+*~
+*.swp
+/draft
+/idnits
+/ox-rfc.el
+/publish/*-latest.*
+/test-*.json
+/test-*.xml
+publish/

@@ -1,0 +1,8 @@
+- version: 2
+  interfaces: ["01:00.1", "01:00.0"] # even number of ports
+  port_limit: 2
+  port_info:
+      - ip: 10.25.0.1
+        default_gw: 10.25.0.2
+      - ip: 10.25.2.2
+        default_gw: 10.25.2.1

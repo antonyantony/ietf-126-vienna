@@ -1,0 +1,90 @@
+./u1.py --flows-start 1 --flows-end 12 --duration 30 --csvfile trex_results-12-2g-no-ipsec.csv
+
+for i in 3 4 5 6 7; do ./u1.py --flows-start 1 --throughput ${i}G --duration 10 --csvfile trex_results-1-${i}g-1440-no-ipsec.csv; done
+
+Prepare for TRex install
+apt-get install linux-headers-$(uname -r)
+
+https://developer.nvidia.com/doca-downloads?deployment_platform=Host-Server
+
+wget https://www.mellanox.com/downloads/DOCA/DOCA_v3.0.0/host/doca-host_3.0.0-058000-25.04-ubuntu2404_amd64.deb
+
+sudo dpkg -i doca-host_3.0.0-058000-25.04-ubuntu2404_amd64.deb
+apt-get update
+apt-get -y install doca-all
+
+mst start
+dkms autoinstall
+
+---- on debian ---
+
+wget https://www.mellanox.com/downloads/DOCA/DOCA_v3.0.0/host/doca-host_3.0.0-058000-25.04-debian125_amd64.deb
+dpkg -i doca-host_3.0.0-058000-25.04-debian125_amd64.deb
+apt-get update
+apt-get -y install doca-all
+
+---
+
+--Python
+wget https://www.python.org/ftp/python/3.9.23/Python-3.9.23.tgz
+tra -zxf Python-3.9.23.tgz
+apt-get install build-essential libssl-dev zlib1g-dev libncurses5-dev libgdbm-dev libreadline-dev libsqlite3-dev libffi-dev libbz2-dev tk-dev
+
+sudo apt-get build-dep python3.11
+./configure --enable-optimizations
+
+make -j 16 altinstall
+
+cd  /root
+python3.9 -m venv venv
+./venv/bin/python3.9  ./venv/bin/pip install cffi
+
+source ./venv/bin/activate
+
+---
+wget --no-check-certificate --no-cache https://trex-tgn.cisco.com/trex/release/latest
+
+tar -xvf latest
+cd v3.06
+apt install net-tools # to get ifconfig
+mv v3.06 /var/tmp/trex-v3.06
+cd /var/tmp/trex-v3.06
+./t-rex-64 -i --no-scapy
+
+lspci -vv -s d5:00.0 | grep NUMA
+
+/etc/trex_cfg.yaml
+- version         : 2
+  port_limit      : 2
+  interfaces    : ["d5:00.0","d5:00.1"]
+  port_info       :  # Port IPs.
+          - ip         : 192.0.1.253
+            default_gw : 192.0.1.254
+          - ip         : 192.0.2.253
+            default_gw : 192.0.2.254
+  platform:
+      master_thread_id: 0
+      latency_thread_id: 1
+      dual_if:
+        - socket: 3
+          # pin TRex to NUMA Node where this PCI device is attached to
+          # lspci -vv -s d5:00.0 | grep NUMA
+          threads: [54,55,56,57,58,59,60,61,62,63]
+
+
+
+mv ./so/x86_64/libstdc++.so.6 ./so/x86_64/old-libstdc++.so.6
+
+sysctl -w vm.nr_hugepages=2048
+mkdir -p /mnt/huge
+mount -t hugetlbfs nodev /mnt/huge
+
+net.ipv6.conf.all.disable_ipv6 = 1
+net.ipv7.conf.default.disable_ipv6 = 1
+net.ipv6.conf.lo.disable_ipv6 = 1
+
+on east
+ip neigh add 192.0.2.253 lladdr 0c:42:a1:7d:23:e1 dev red nud permanent
+
+git clone https://github.com/isc-projects/ethq.git
+python3.9apt install libncurses5-dev libncursesw5-dev

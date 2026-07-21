@@ -1,0 +1,9 @@
+[Unit]
+Description=Set static ARP entry of sunset east
+
+[Service]
+Type=oneshot
+ExecStart=/sbin/ip neigh replace 10.25.2.2 lladdr 0c:42:a1:f7:bf:c6 dev red nud permanent
+
+[Install]
+WantedBy=multi-user.target
