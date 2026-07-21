@@ -1,0 +1,17 @@
+#!/usr/sbin/nft -f
+
+define SRC_NET = 2001:db8:1::/48
+define DST_NET = 2001:db8:2::/48
+
+table ip6 ratelimit {
+    chain forward {
+        type filter hook forward priority filter; policy accept;
+
+        ip6 saddr $SRC_NET ip6 daddr $DST_NET tcp flags & (syn|ack) != 0 \
+            limit rate 100/second burst 20 packets \
+            counter accept
+
+        ip6 saddr $SRC_NET ip6 daddr $DST_NET tcp \
+            counter drop
+    }
+}
