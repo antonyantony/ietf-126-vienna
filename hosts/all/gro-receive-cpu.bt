@@ -1,0 +1,18 @@
+  kprobe:gro_receive_skb
+  {
+      $skb = (struct sk_buff *)arg1;
+
+      if (bswap($skb->protocol) == 0x86dd) {
+          $ip6 = (struct ipv6hdr *)$skb->data;
+
+          if ($ip6->nexthdr == 6 || $ip6->nexthdr == 17) {
+              $th = (struct tcphdr *)((uint8 *)$ip6 + 40);
+              $dport = bswap($th->dest);
+
+              if ($dport == 5201) {
+                  printf("cpu=%u src_port=%u dst_port=%u\n",
+  cpu, bswap($th->source), $dport);
+              }
+          }
+      }
+  }

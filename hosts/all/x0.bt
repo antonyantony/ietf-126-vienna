@@ -1,0 +1,19 @@
+  kretprobe:xfrm_dst_check
+  /retval != 0/
+  {
+      $dst = (struct dst_entry *)retval;
+      $x = $dst->xfrm;
+      $x = $dst->xfrm;
+      if ($x != 0) {
+          printf("xfrm_dst_check cpu=%u cached=1 spi=0x%x pcpu_num=%u\n", cpu, bswap($x->id.spi),
+  $x->pcpu_num);
+      }
+  }
+
+  kretprobe:xfrm_state_find
+  /retval != 0/
+  {
+      $x = (struct xfrm_state *)retval;
+      printf("xfrm_state_find cpu=%u cached=0 spi=0x%x pcpu_num=%u\n", cpu, bswap($x->id.spi),
+  $x->pcpu_num);
+  }
