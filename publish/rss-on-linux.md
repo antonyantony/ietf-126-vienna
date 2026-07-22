@@ -1,5 +1,6 @@
-Goal: scalable IPsec throughput with multiple CPUs(without IPsec HW
-offload)
+# Linux packet steering quick summary
+
+Goal: scalable IPsec throughput with multiple CPUs, using RFC9611(without IPsec HW offload)
 
 Linux IPsec use a pair of SAs. Here the new idea is install identical
 SAs, same traffic selectors and different SPI, per CPU. Let say there
