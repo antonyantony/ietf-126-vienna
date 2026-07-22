@@ -6,10 +6,11 @@
       if ($ip6->nexthdr == 6 || $ip6->nexthdr == 17) {
           $th = (struct tcphdr *)((uint8 *)$ip6 + 40);
           $dport = bswap($th->dest);
+	  $sport = swap($th->source);
 
-          if ($dport == 5201) {
-              printf("cpu=%u src_port=%u dst_port=%u\n", cpu, bswap($th->source),
-  $dport);
+          if ($dport == 5201 || $source == 5201) {
+              printf("cpu=%u src_port=%u dst_port=%u\n", cpu,
+		      $sport, $dport);
           }
       }
   }
