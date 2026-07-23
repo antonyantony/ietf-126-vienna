@@ -13,6 +13,59 @@ receiver. And later on in Nov 2019 kernel version 5.5 ML5 drivers seems
 to support ESP. [Mellonox
 RSS](https://community.mellanox.com/s/article/Bluefield-IP-Forwarding-and-IPSEC-SPI-RSS).
 
+## Getting Started
+
+### Software requirements
+
+- Linux Kernel 6.12 or later
+- iproute2 7.0 or later
+- libreswan (with per-CPU SA patches) or strongSwan 6.0.0 or later
+
+### Network Interface (NIC) tuning
+
+#### Packet steering
+
+TBD
+
+#### Enabling RSS
+
+TBD
+
+#### Show IRQ distribution
+
+<pre>
+cat /proc/interrupts
+</pre>
+
+#### Set IRQ distribution
+
+<pre>
+hosts/all/set-irq-affinity.sh &lt;interface&gt;
+</pre>
+
+### Diagnosing
+
+#### Red traffic
+
+##### bpf traffic on incoming interface
+
+TBD
+
+#### Black traffic
+
+TBD
+
+#### Watch xfrm state usage
+
+<pre>
+hosts/all/xfrm-pcpu-watch.sh [interval_seconds]
+</pre>
+
+### Historic documents
+
+- Libreswan and Linux XFRM Proof of concept
+- [RSS and Friends on Linux](rss-on-linux.md)
+
 ### config ntuple Commands
 
 Enable GRO. ideally you should be able to run the following command,
@@ -119,17 +172,10 @@ during a test that used IPSEC and four receive queues."
 
 #### Linux AWS XDP 2023 expeiriment
 
-= We used UDP encapsulation to overcome per flow limitation of AWS.
-
-- [xdb-tools with spi based XDP_CPUREDIRECT
-  support](https://github.com/antonyantony/xdp-tools/tree/xfrm-pcpu-v3-antony-20231108)
-  2023 October
-
-\`\`\` ~/xdp-bench redirect-cpu -v -p l4-sport -q 4096 --cpu-all
-eth0\`\`\` would distribute flows to different cpus Read the following
-section for more on [XDP
-cpump](https://github.com/xdp-project/xdp-cpumap-tc#assign-cpus-to-rx-queues)
-or next section
+See the "2023 AWS XDP Experiment" section in
+[2026-xdp-pcpu.md](2026-xdp-pcpu.md) (moved there, alongside the current
+2026 XDP CPUMAP steering commands, to keep all XDP-specific redirect
+details in one place).
 
 ## More Linux related information about RSS/XDP ..
 

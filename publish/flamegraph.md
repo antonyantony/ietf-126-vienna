@@ -35,8 +35,15 @@ single CPU. Run this on the CPU where the xfrm code is running.
 ```
 perf record -b -e cycles,L1-dcache-load-misses,L1-icache-load-misses:k -g --call-graph dwarf
 perf script > out.perf
+
+cd Flamegraph
 ./stackcollapse-perf.pl ../out.perf > ../out.folded
 grep cpuid out.kern_folded | ./flamegraph.pl > cpuid.svg
+```
+
+perf line tweked by LLM to add branch misses
+```
+perf record -e cycles,instructions,branches,branch-misses,cache-misses,L1-dcache-load-misses,L1-icache-load-misses,mem_load_retired.l3_miss,dtlb_load_miss_retired.l2,cycle_activity.stalls_mem_busy -g --call-graph dwarf
 ```
 
 Here the plot is isolating cpus while recording all cpus,  stacks from a system-wide, multi-CPU capture before rendering the SVG.
