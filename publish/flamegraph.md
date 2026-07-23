@@ -21,6 +21,7 @@ perf record -b -e cycles,L1-dcache-load-misses,L1-icache-load-misses:k -g -C 5 -
 Generate the flame graph:
 
 ```
+perf script > out.perf
 cd FlameGraph
 ./stackcollapse-perf.pl ../out.perf > ../out.folded
 ./flamegraph.pl ../out.folded
@@ -33,6 +34,7 @@ single CPU. Run this on the CPU where the xfrm code is running.
 
 ```
 perf record -b -e cycles,L1-dcache-load-misses,L1-icache-load-misses:k -g --call-graph dwarf
+perf script > out.perf
 ./stackcollapse-perf.pl ../out.perf > ../out.folded
 grep cpuid out.kern_folded | ./flamegraph.pl > cpuid.svg
 ```
