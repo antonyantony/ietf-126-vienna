@@ -5,9 +5,33 @@ Summary: How to use perf and FlameGraph to profile CPU cycles and cache misses f
 
 ## Prerequisites
 
-- `perf`
-- [FlameGraph](https://github.com/brendangregg/FlameGraph)
-- Likely some perl modules for FlameGraph.
+- [perf](https://perfwiki.github.io/main/tutorial/#sampling-with-perf-record)
+- [FlameGraph](https://github.com/brendangregg/FlameGraph) Clone the github
+- Likely a couple perl modules for FlameGraph.
+
+### Installing perf
+
+On Debian install [linux-perf](https://packages.debian.org/sid/linux-perf):
+```
+apt install linux-perf
+```
+
+On Fedora:
+```
+dnf install perf
+```
+
+Build locally from matching kernel source tree:
+```
+cd /path/to/your/linux-source
+make -C tools/perf -j $(nproc)
+make -C tools/perf install prefix=/usr/
+```
+
+or just Manual copy:
+```
+cp tools/perf/perf /usr/local/bin/perf
+```
 
 ## Quick flame graph
 
@@ -41,9 +65,10 @@ cd Flamegraph
 grep cpuid out.kern_folded | ./flamegraph.pl > cpuid.svg
 ```
 
-perf line tweked by LLM to add branch misses
+### New perf options tweked by LLM to add branch misses
+
 ```
-perf record -e cycles,instructions,branches,branch-misses,cache-misses,L1-dcache-load-misses,L1-icache-load-misses,mem_load_retired.l3_miss,dtlb_load_miss_retired.l2,cycle_activity.stalls_mem_busy -g --call-graph dwarf
+perf record -b -e cycles,instructions,branches,branch-misses,cache-misses,L1-dcache-load-misses,L1-icache-load-misses,mem_load_retired.l3_miss,dtlb_load_miss_retired.l2,cycle_activity.stalls_mem_busy -g --call-graph dwarf
 ```
 
 Here the plot is isolating cpus while recording all cpus,  stacks from a system-wide, multi-CPU capture before rendering the SVG.
