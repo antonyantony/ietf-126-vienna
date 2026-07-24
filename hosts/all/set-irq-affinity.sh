@@ -1,11 +1,10 @@
-#! /bin/bash
-
-service irqbalance stop
+#!/usr/bin/bash
 
 function usage
 {
-	echo "usage: $0 [--show] <interface> [<interface> ...]"
-	echo "  --show show current irq/pci mapping, don't change affinity"
+	echo "usage: $0 [--show|--set] <interface> [<interface> ...]"
+	echo "  --show  show current irq/pci mapping, don't change affinity (default)"
+	echo "  --set   apply trivial irq affinity, stopping irqbalance first"
 }
 
 function get_driver
@@ -66,6 +65,23 @@ function get_irq_list_virtio_net
 	}'
 }
 
+# bnxt_en (Broadcom NetXtreme): queue IRQs named e.g. "eth0-TxRx-0" when rings
+# are combined, or "eth0-tx-0" / "eth0-rx-0" when split. tx.N and rx.N are
+# separate IRQs for the same queue N and must share a core via QUEUE_KEY=N;
+# TxRx-N is already one IRQ per queue so keying on N is still safe.
+function get_irq_list_bnxt_en
+{
+	interface=$1
+
+	grep -E -- "${interface}-(TxRx|tx|rx)-[0-9]+" /proc/interrupts | awk '{
+		irq = $1
+		sub(/:$/, "", irq)
+		name = $NF
+		sub(/^.*-/, "", name)
+		print irq, name
+	}'
+}
+
 # fallback for unrecognized drivers: any IRQ line matching the NIC's PCI bus-info
 function get_irq_list_generic
 {
@@ -89,6 +105,9 @@ function get_irq_list
 			;;
 		ena)
 			get_irq_list_ena $interface
+			;;
+		bnxt_en)
+			get_irq_list_bnxt_en $interface
 			;;
 		virtio_net)
 			get_irq_list_virtio_net $interface
@@ -143,14 +162,18 @@ function show_irq_mapping
 	done | sort -t $'\t' -k1,1n -k2,2n | cut -f3-
 }
 
-SHOW=0
+SET=0
 INTERFACES=()
 
 while [ $# -gt 0 ]
 do
 	case "$1" in
 		--show)
-			SHOW=1
+			SET=0
+			shift
+			;;
+		--set|--apply)
+			SET=1
 			shift
 			;;
 		-h|--help)
@@ -174,13 +197,15 @@ if [ ${#INTERFACES[@]} -eq 0 ]; then
 	exit 1
 fi
 
-if [ "$SHOW" -eq 1 ]; then
+if [ "$SET" -eq 0 ]; then
 	for interface in "${INTERFACES[@]}"
 	do
 		show_irq_mapping $interface
 	done
 	exit 0
 fi
+
+service irqbalance stop
 
 echo "----------------------------"
 echo "Setting trivial IRQ affinity"
